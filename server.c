@@ -14,6 +14,14 @@ int main(int argc, char *argv[])
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr; 
 
+    if(argc != 2)
+    {
+        printf("\n Usage: %s <file to send> \n",argv[0]);
+        return 1;
+    }
+
+    char* filename = argv[1];
+
     char sendBuff[1025];
     time_t ticks; 
 
@@ -28,14 +36,27 @@ int main(int argc, char *argv[])
     bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)); 
 
     listen(listenfd, 10); 
-
+    
+    char* source = malloc(sizeof(char)*10000); // todo: dynamic based on file size
+    FILE *fp = fopen(filename, "r");
+    size_t newLen;
+    if (fp != NULL) {
+        newLen = fread(source, sizeof(char), 10000, fp);
+        if ( ferror( fp ) != 0 ) {
+            fputs("Error reading file", stderr);
+        } else {
+            source[newLen++] = '\0'; /* Just to be safe. */
+        }
+        fclose(fp);
+    } else {
+        return 2;
+    }
+    
     while(1)
     {
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
 
-        ticks = time(NULL);
-        snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
-        write(connfd, sendBuff, strlen(sendBuff)); 
+        write(connfd, source, newLen); 
 
         close(connfd);
         sleep(1);

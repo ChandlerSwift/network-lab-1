@@ -15,9 +15,9 @@ int main(int argc, char *argv[])
     char recvBuff[1024];
     struct sockaddr_in serv_addr; 
 
-    if(argc != 2)
+    if(argc != 3)
     {
-        printf("\n Usage: %s <ip of server> \n",argv[0]);
+        printf("\n Usage: %s <ip of server> <file name> \n",argv[0]);
         return 1;
     } 
 
@@ -45,14 +45,16 @@ int main(int argc, char *argv[])
        return 1;
     } 
 
+    FILE *fp = fopen(argv[2], "w");
+
     while ( (n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
     {
         recvBuff[n] = 0;
-        if(fputs(recvBuff, stdout) == EOF)
+        if(fputs(recvBuff, fp) == EOF)
         {
             printf("\n Error : Fputs error\n");
         }
-    } 
+    }
 
     if(n < 0)
     {
